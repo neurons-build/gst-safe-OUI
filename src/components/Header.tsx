@@ -73,7 +73,7 @@ export const Header: React.FC<React.ComponentProps<typeof Row>> = ({ ...flex }) 
                         <Avatar size="l" />
                         {profile?.username && <Text variant="label-default-m">{profile?.username}</Text>}
                       </Column>
-                      <Option hasPrefix={<Icon onBackground="neutral-weak" size="s" name="person" />} label="Profile" value="profile" href="/profile" />
+                      <Option hasPrefix={<Icon onBackground="neutral-weak" size="s" name="dashboard" />} label="Dashboard" value="dashboard" href="/dashboard" />
                       <Option hasPrefix={<Icon onBackground="neutral-weak" size="s" name="settings" />} label="Settings" value="settings" href="/settings" />
                     </Column>
                     <Column fillWidth padding="4">

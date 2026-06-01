@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/sb/client";
 import { Button, Column, Input, PasswordInput, Row, SmartLink, Spinner, Text } from "@once-ui-system/core";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm({
@@ -14,6 +14,8 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const skip = searchParams.get("skip") === "true";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +29,11 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      router.push("/profile");
+      if (skip) {
+        router.push("/dashboard?skipOnboarding=true");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -61,7 +67,7 @@ export function LoginForm({
               onChange={(e) => setPassword(e.target.value)}
             />
             <Row fillWidth horizontal="end" paddingRight="24" paddingTop="8">
-              <SmartLink href="/auth?state=forgot-password">
+              <SmartLink href={`/auth?state=forgot-password${skip ? "&skip=true" : ""}`}>
                 <Text variant="label-default-s">Forgot your password?</Text>
               </SmartLink>
             </Row>

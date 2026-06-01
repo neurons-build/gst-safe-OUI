@@ -1,8 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/sb/client";
-import { Button, Column, Input, PasswordInput, Row, SmartLink, Spinner, Text } from "@once-ui-system/core";
-import { useRouter } from "next/navigation";
+import { Button, Column, Input, PasswordInput, Row, Spinner, Text } from "@once-ui-system/core";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function SignUpForm({
@@ -14,6 +14,8 @@ export function SignUpForm({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const skip = searchParams.get("skip") === "true";
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,18 +24,19 @@ export function SignUpForm({
     setError(null);
 
     try {
+      const destinationPath = skip ? "/dashboard?skipOnboarding=true" : "/onboarding";
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/onboarding`,
+          emailRedirectTo: `${window.location.origin}${destinationPath}`,
           data: {
             full_name: email.split('@')[0], // Temporary name from email
           },
         },
       });
       if (error) throw error;
-      router.push("/onboarding");
+      router.push(destinationPath);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {

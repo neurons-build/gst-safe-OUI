@@ -14,6 +14,7 @@ export default function Onboarding() {
   const [isGstRegistered, setIsGstRegistered] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [skipLink, setSkipLink] = useState("/auth?state=login&skip=true");
   const router = useRouter();
   const supabase = createClient();
 
@@ -22,8 +23,11 @@ export default function Onboarding() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        setSkipLink("/auth?state=login&skip=true");
         router.push("/auth?state=login");
+        return;
       }
+      setSkipLink("/dashboard?skipOnboarding=true");
     };
     checkAuth();
   }, [router, supabase]);
@@ -180,10 +184,11 @@ export default function Onboarding() {
                 <Text variant="label-default-s">State</Text>
                 <Select
                   id="state"
+                  name="state"
                   placeholder="Select your state"
                   required
                   value={state}
-                  onChange={(e) => setState(e.target.value)}
+                  onChange={(e) => setState(String(e.target.value))}
                   options={INDIAN_STATES.map((s) => ({ label: s, value: s }))}
                 />
                 <Text variant="label-default-xs" onBackground="neutral-weak">
@@ -261,7 +266,7 @@ export default function Onboarding() {
         )}
 
         <Row fillWidth horizontal="center" paddingTop="16">
-          <SmartLink href="/auth?state=login">
+          <SmartLink href={skipLink}>
             <Text variant="label-default-s" onBackground="neutral-weak">
               Skip for now
             </Text>

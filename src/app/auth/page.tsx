@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 function AuthInner() {
   const [state, setState] = useState("login");
   const searchParams = useSearchParams();
+  const skip = searchParams.get("skip") === "true";
 
   useEffect(() => {
     const qp = searchParams.get("state");
@@ -19,6 +20,9 @@ function AuthInner() {
       setState(qp);
     }
   }, [searchParams]);
+
+  const buildAuthLink = (targetState: string) =>
+    `?state=${targetState}${skip ? "&skip=true" : ""}`;
 
   return (
     <>
@@ -31,14 +35,14 @@ function AuthInner() {
       {state === "login" ? (
         <Row fillWidth gap="4" align="center" horizontal="center">
           Don't have an account?
-          <SmartLink href="?state=signup">
+          <SmartLink href={buildAuthLink("signup")}>
             Sign up
           </SmartLink>
         </Row>
       ) : (
         <Row fillWidth gap="4" align="center" horizontal="center">
           Already have an account?
-          <SmartLink href="?state=login">
+          <SmartLink href={buildAuthLink("login")}>
             Login
           </SmartLink>
         </Row>

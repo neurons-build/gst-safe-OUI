@@ -11,7 +11,7 @@ import {
   Badge,
   Card,
 } from "@once-ui-system/core";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   formatCurrency,
@@ -39,6 +39,8 @@ interface DashboardData {
 export default function Dashboard() {
   const { profile, userEmail } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const skipOnboarding = searchParams.get("skipOnboarding") === "true";
   const supabase = createClient();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,8 @@ export default function Dashboard() {
       if (userError) throw userError;
 
       // Check if onboarding is complete
-      if (!userData.onboarding_complete) {
+      const skipOnboarding = searchParams.get("skipOnboarding") === "true";
+      if (!userData.onboarding_complete && !skipOnboarding) {
         router.push("/onboarding");
         return;
       }
@@ -145,6 +148,20 @@ export default function Dashboard() {
             Welcome back, {userEmail}
           </Text>
         </Column>
+
+        {skipOnboarding && (
+          <Column
+            fillWidth
+            padding="16"
+            radius="l"
+            background="neutral-alpha-weak"
+            border="neutral-alpha-weak"
+          >
+            <Text variant="body-default-s" onBackground="neutral-strong">
+              You skipped onboarding. Your dashboard is available, but you can complete setup later from Settings.
+            </Text>
+          </Column>
+        )}
 
         {/* Alert Banner */}
         {percentage >= 75 && (
