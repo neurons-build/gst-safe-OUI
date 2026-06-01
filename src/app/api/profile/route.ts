@@ -25,26 +25,19 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2) Use a service-role client to bypass RLS for the actual data fetch
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceClient =
+      url && serviceRoleKey
+        ? createServiceClient(url, serviceRoleKey, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          })
+        : null;
 
-    if (!url || !serviceRoleKey) {
-      return NextResponse.json(
-        {
-          error:
-            "Server is missing SUPABASE configuration. Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.",
-        },
-        { status: 500 },
-      );
-    }
-
-    const serviceClient = createServiceClient(url, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const profileClient = serviceClient ?? supabase;
 
     // 3) Enforce ownership by filtering on the authenticated user's id
-    const { data, error } = await serviceClient
+    const { data, error } = await profileClient
       .from("users")
       .select("name")
       .eq("id", user.id)
@@ -61,25 +54,25 @@ export async function GET() {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    // Fetch user's global role (read-only)
-    const { data: roleRow, error: roleError } = await serviceClient
-      .from("user_global_roles")
-      .select("role_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    // If role fetch errors, don't block the profile fetch; expose null role
-    const roleId = roleError ? null : roleRow?.role_id ?? null;
-
-    // Get role rank from roles table if we have a roleId
+    let roleId: string | null = null;
     let roleRank: number | null = null;
-    if (roleId) {
-      const { data: rolesRow, error: rolesErr } = await serviceClient
-        .from("roles")
-        .select("rank")
-        .eq("id", roleId)
+
+    if (serviceClient) {
+      const { data: roleRow, error: roleError } = await serviceClient
+        .from("user_global_roles")
+        .select("role_id")
+        .eq("user_id", user.id)
         .maybeSingle();
-      roleRank = rolesErr ? null : rolesRow?.rank ?? null;
+      roleId = roleError ? null : roleRow?.role_id ?? null;
+
+      if (roleId) {
+        const { data: rolesRow, error: rolesErr } = await serviceClient
+          .from("roles")
+          .select("rank")
+          .eq("id", roleId)
+          .maybeSingle();
+        roleRank = rolesErr ? null : rolesRow?.rank ?? null;
+      }
     }
 
     return NextResponse.json(
@@ -136,18 +129,16 @@ export async function PATCH(request: Request) {
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceRoleKey) {
-      return NextResponse.json(
-        { error: "Server is missing SUPABASE configuration" },
-        { status: 500 },
-      );
-    }
+    const serviceClient =
+      url && serviceRoleKey
+        ? createServiceClient(url, serviceRoleKey, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          })
+        : null;
 
-    const serviceClient = createServiceClient(url, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const updateClient = serviceClient ?? supabase;
 
-    const { data, error } = await serviceClient
+    const { data, error } = await updateClient
       .from("users")
       .update(updates)
       .eq("id", user.id)
@@ -161,24 +152,25 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Also return role (read-only; not modified here)
-    const { data: roleRow, error: roleError } = await serviceClient
-      .from("user_global_roles")
-      .select("role_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    const roleId = roleError ? null : roleRow?.role_id ?? null;
-
-    // Lookup role rank if roleId is present
+    let roleId: string | null = null;
     let roleRank: number | null = null;
-    if (roleId) {
-      const { data: rolesRow, error: rolesErr } = await serviceClient
-        .from("roles")
-        .select("rank")
-        .eq("id", roleId)
+
+    if (serviceClient) {
+      const { data: roleRow, error: roleError } = await serviceClient
+        .from("user_global_roles")
+        .select("role_id")
+        .eq("user_id", user.id)
         .maybeSingle();
-      roleRank = rolesErr ? null : rolesRow?.rank ?? null;
+      roleId = roleError ? null : roleRow?.role_id ?? null;
+
+      if (roleId) {
+        const { data: rolesRow, error: rolesErr } = await serviceClient
+          .from("roles")
+          .select("rank")
+          .eq("id", roleId)
+          .maybeSingle();
+        roleRank = rolesErr ? null : rolesRow?.rank ?? null;
+      }
     }
 
     return NextResponse.json(
