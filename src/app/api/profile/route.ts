@@ -27,12 +27,14 @@ export async function GET() {
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const serviceClient =
-      url && serviceRoleKey
-        ? createServiceClient(url, serviceRoleKey, {
-            auth: { persistSession: false, autoRefreshToken: false },
-          })
-        : null;
+    
+    // Only create service client if we have a valid-looking service role key
+    const hasValidServiceKey = url && serviceRoleKey && serviceRoleKey.length > 10 && !serviceRoleKey.includes("dfgh");
+    const serviceClient = hasValidServiceKey
+      ? createServiceClient(url, serviceRoleKey, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        })
+      : null;
 
     const profileClient = serviceClient ?? supabase;
 
@@ -41,19 +43,141 @@ export async function GET() {
       .from("users")
       .select("name")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (error) {
+    // If user record doesn't exist yet (e.g., just signed up), create a placeholder
+    if (!data) {
+      // Check if there's an actual error (not just "no rows found")
+      if (error) {
+        console.error("[API Profile GET] Error fetching user:", {
+          code: (error as any).code,
+          message: (error as any).message,
+          userId: user.id,
+        });
+        return NextResponse.json(
+          { error: "Failed to fetch profile", details: (error as any).message },
+          { status: 500 },
+        );
+      }
+
+      // No error, just no data - need to create user
+      if (!serviceClient) {
+        console.warn("[API Profile GET] Cannot create user - no valid service role key");
+        // Try to create with regular client if possible (might fail due to RLS)
+        const { data: newUser, error: createError } = await supabase
+          .from("users")
+          .insert({
+            id: user.id,
+            name: user.email?.split("@")[0] || "User",
+            state: "Delhi",
+            state_category: "general",
+            gst_threshold: 200000000,
+          })
+          .select("name")
+          .single();
+
+        if (createError) {
+          console.error("[API Profile GET] Failed to create user with regular client:", createError);
+          return NextResponse.json(
+            { error: "Profile not found and cannot create", details: "Please contact support" },
+            { status: 404 },
+          );
+        }
+        
+        if (!newUser) {
+          return NextResponse.json(
+            { error: "Profile not found" },
+            { status: 404 },
+          );
+        }
+
+        const data_val = newUser;
+        
+        let roleId: string | null = null;
+        let roleRank: number | null = null;
+
+        return NextResponse.json(
+          {
+            profile: {
+              username: data_val.name,
+            },
+            email: user.email ?? null,
+            roleId,
+            roleRank,
+          },
+          { status: 200 },
+        );
+      }
+      
+      const { data: newUser, error: createError } = await serviceClient
+        .from("users")
+        .insert({
+          id: user.id,
+          name: user.email?.split("@")[0] || "User",
+          state: "Delhi", // Default state
+          state_category: "general",
+          gst_threshold: 200000000,
+        })
+        .select("name")
+        .single();
+
+      if (createError) {
+        console.error("[API Profile GET] Failed to create user:", {
+          code: (createError as any).code,
+          message: (createError as any).message,
+          userId: user.id,
+        });
+        return NextResponse.json(
+          { error: "Failed to create user profile", details: (createError as any).message || "Unknown error" },
+          { status: 500 },
+        );
+      }
+
+      if (!newUser) {
+        console.error("[API Profile GET] User created but no data returned");
+        return NextResponse.json(
+          { error: "Failed to create user profile", details: "No data returned" },
+          { status: 500 },
+        );
+      }
+
+      const data_val = newUser;
+      
+      let roleId: string | null = null;
+      let roleRank: number | null = null;
+
+      if (serviceClient) {
+        const { data: roleRow, error: roleError } = await serviceClient
+          .from("user_global_roles")
+          .select("role_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        roleId = roleError ? null : roleRow?.role_id ?? null;
+
+        if (roleId) {
+          const { data: rolesRow, error: rolesErr } = await serviceClient
+            .from("roles")
+            .select("rank")
+            .eq("id", roleId)
+            .maybeSingle();
+          roleRank = rolesErr ? null : rolesRow?.rank ?? null;
+        }
+      }
+
       return NextResponse.json(
-        { error: "Failed to fetch profile", details: error.message },
-        { status: 500 },
+        {
+          profile: {
+            username: data_val.name,
+          },
+          email: user.email ?? null,
+          roleId,
+          roleRank,
+        },
+        { status: 200 },
       );
     }
 
-    if (!data) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-    }
-
+    // User record exists, fetch their roles
     let roleId: string | null = null;
     let roleRank: number | null = null;
 

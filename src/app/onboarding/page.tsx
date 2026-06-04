@@ -11,6 +11,7 @@ export default function Onboarding() {
   const [name, setName] = useState("");
   const [profession, setProfession] = useState("");
   const [state, setState] = useState("");
+  const [useManualState, setUseManualState] = useState(false);
   const [isGstRegistered, setIsGstRegistered] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -182,18 +183,54 @@ export default function Onboarding() {
             <Column fillWidth gap="16">
               <Column fillWidth gap="8">
                 <Text variant="label-default-s">State</Text>
-                <Select
-                  id="state"
-                  name="state"
-                  placeholder="Select your state"
-                  required
-                  value={state}
-                  onChange={(e) => setState(String(e.target.value))}
-                  options={INDIAN_STATES.map((s) => ({ label: s, value: s }))}
-                />
-                <Text variant="label-default-xs" onBackground="neutral-weak">
-                  This determines your GST registration threshold (₹20L for most states, ₹10L for special category states)
-                </Text>
+                {!useManualState ? (
+                  <>
+                    <Select
+                      id="state"
+                      name="state"
+                      placeholder="Select your state"
+                      required
+                      value={state}
+                      onChange={(e) => setState(String(e.target.value))}
+                      options={INDIAN_STATES.map((s) => ({ label: s, value: s }))}
+                    />
+                    <Text variant="label-default-xs" onBackground="neutral-weak">
+                      This determines your GST registration threshold (₹20L for most states, ₹10L for special category states)
+                    </Text>
+                    <Button
+                      variant="tertiary"
+                      onClick={() => {
+                        setUseManualState(true);
+                        setState("");
+                      }}
+                    >
+                      Can't find your state? Enter manually
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      id="state-manual"
+                      type="text"
+                      placeholder="Enter your state name"
+                      required
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                    />
+                    <Text variant="label-default-xs" onBackground="neutral-weak">
+                      Enter your state or union territory name
+                    </Text>
+                    <Button
+                      variant="tertiary"
+                      onClick={() => {
+                        setUseManualState(false);
+                        setState("");
+                      }}
+                    >
+                      Back to dropdown
+                    </Button>
+                  </>
+                )}
               </Column>
               <Row fillWidth gap="8" paddingTop="16">
                 <Button fillWidth variant="secondary" onClick={() => setStep(1)}>

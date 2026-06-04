@@ -145,7 +145,7 @@ export default function Dashboard() {
         <Column fillWidth gap="8">
           <Heading variant="display-strong-s">Dashboard</Heading>
           <Text variant="body-default-s" onBackground="neutral-weak">
-            Welcome back, {userEmail}
+            Welcome back, {profile?.username?.split(' ')[0] || userEmail || "User"}
           </Text>
         </Column>
 
@@ -176,8 +176,8 @@ export default function Dashboard() {
               {percentage >= 100
                 ? "You've crossed the GST threshold. Register immediately to avoid penalties."
                 : percentage >= 90
-                ? "You're at 90% of your GST threshold. Register now to avoid penalties."
-                : "You're at 75% of your GST threshold. Start preparing for registration."}
+                  ? "You're at 90% of your GST threshold. Register now to avoid penalties."
+                  : "You're at 75% of your GST threshold. Start preparing for registration."}
             </Text>
           </Column>
         )}
@@ -214,50 +214,143 @@ export default function Dashboard() {
         </Column>
 
         {/* Metric Cards */}
-        <Column fillWidth gap="8">
+        <Column fillWidth gap="12">
           <Heading variant="heading-strong-s">Overview</Heading>
-          <Row fillWidth gap="8" wrap>
-            <Card fillWidth flex={1} padding="16" radius="l" border="neutral-alpha-weak">
-              <Column fillWidth gap="4">
-                <Text variant="label-default-s" onBackground="neutral-weak">
-                  Earned this FY
+
+          {/* Hero Card */}
+          <Card
+            fillWidth
+            padding="24"
+            radius="xl"
+            border="neutral-alpha-weak"
+            background="brand-alpha-weak"
+          >
+            <Column gap="8">
+              <Text
+                variant="label-default-s"
+                onBackground="neutral-weak"
+              >
+                Earned this FY
+              </Text>
+
+              <Heading variant="heading-strong-xl">
+                {formatCurrency(dashboardData.totalIncomePaise)}
+              </Heading>
+
+              <Text
+                variant="body-default-s"
+                onBackground="neutral-weak"
+              >
+                Total professional income recorded this financial year
+              </Text>
+            </Column>
+          </Card>
+
+          {/* Secondary Metrics */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 12,
+              border: "1px solid var(--danger-alpha-weak)",
+              width: "100%",
+            }}
+          >
+            <Card
+              padding="20"
+              radius="xl"
+              border="neutral-alpha-weak"
+            >
+              <Column gap="8">
+                <Text
+                  variant="label-default-s"
+                  onBackground="neutral-weak"
+                >
+                  GST Liability
                 </Text>
-                <Heading variant="heading-strong-m">
-                  {formatCurrency(dashboardData.totalIncomePaise)}
-                </Heading>
-              </Column>
-            </Card>
-            <Card fillWidth flex={1} padding="16" radius="l" border="neutral-alpha-weak">
-              <Column fillWidth gap="4">
-                <Text variant="label-default-s" onBackground="neutral-weak">
-                  Est. GST Liability
-                </Text>
-                <Heading variant="heading-strong-m">
+
+                <Heading variant="heading-strong-l">
                   {formatCurrency(gstLiabilityPaise)}
                 </Heading>
               </Column>
             </Card>
-            <Card fillWidth flex={1} padding="16" radius="l" border="neutral-alpha-weak">
-              <Column fillWidth gap="4">
-                <Text variant="label-default-s" onBackground="neutral-weak">
+
+            <Card
+              padding="20"
+              radius="xl"
+              border="neutral-alpha-weak"
+            >
+              <Column gap="8">
+                <Text
+                  variant="label-default-s"
+                  onBackground="neutral-weak"
+                >
                   Remaining to Threshold
                 </Text>
-                <Heading variant="heading-strong-m">
+
+                <Heading variant="heading-strong-l">
                   {formatCurrency(remainingPaise)}
                 </Heading>
               </Column>
             </Card>
-            <Card fillWidth flex={1} padding="16" radius="l" border="neutral-alpha-weak">
-              <Column fillWidth gap="4">
-                <Text variant="label-default-s" onBackground="neutral-weak">
+          </div>
+
+          {/* Progress Card */}
+          <Card
+            fillWidth
+            padding="20"
+            radius="xl"
+            border="neutral-alpha-weak"
+          >
+            <Column gap="8">
+              <Row
+                fillWidth
+                horizontal="between"
+                vertical="center"
+              >
+                <Text
+                  variant="label-default-s"
+                  onBackground="neutral-weak"
+                >
                   Threshold Used
                 </Text>
-                <Heading variant="heading-strong-m">
+
+                <Text variant="label-default-m">
                   {percentage}%
-                </Heading>
-              </Column>
-            </Card>
-          </Row>
+                </Text>
+              </Row>
+
+              <div
+                style={{
+                  width: "100%",
+                  height: 8,
+                  borderRadius: 999,
+                  background: "var(--neutral-alpha-medium)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${Math.min(percentage, 100)}%`,
+                    height: "100%",
+                    borderRadius: 999,
+                    background:
+                      percentage >= 90
+                        ? "var(--warning-solid-medium)"
+                        : "var(--brand-solid-medium)",
+                    transition: "width 300ms ease",
+                  }}
+                />
+              </div>
+
+              <Text
+                variant="body-default-s"
+                onBackground="neutral-weak"
+              >
+                {formatCurrency(dashboardData.totalIncomePaise)} of ₹20,00,000 threshold
+              </Text>
+            </Column>
+          </Card>
         </Column>
 
         {/* Filing Deadlines (if GST registered) */}

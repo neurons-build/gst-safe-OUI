@@ -109,7 +109,7 @@ export default function RootLayout({
         />
       </head>
       <Providers>
-        <Column as="body" background="page" fillWidth horizontal="center" margin="0" padding="0" style={{ minHeight: "100vh" }}>
+        <Column as="body" background="page" fillWidth horizontal="center" margin="0" padding="0" style={{ minHeight: "100vh" }} suppressHydrationWarning>
           <RouteLogger />
           <Background
             position="absolute"
