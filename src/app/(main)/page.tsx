@@ -114,7 +114,7 @@ export default function Home() {
             ))}
           </Grid>
         </Column>
-        <Column fillWidth horizontal="center" gap="24">
+        {/* <Column fillWidth horizontal="center" gap="24">
           <Heading as="h2" variant="display-strong-xs" marginBottom="48" align="center">
             Get started in 3 steps
           </Heading>
@@ -141,7 +141,7 @@ export default function Home() {
               )}
             </Column>
           ))}
-        </Column>
+        </Column> */}
       </Column>
     </Column>
   );

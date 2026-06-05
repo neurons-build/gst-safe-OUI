@@ -110,7 +110,7 @@ const effects = {
 const schema = {
   logo: "",
   type: "Organization",
-  name: "Once UI",
+  name: "GST Safe",
   description: meta.home.description,
   email: "support@once-ui.com",
 };
