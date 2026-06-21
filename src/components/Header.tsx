@@ -55,7 +55,7 @@ export const Header: React.FC<React.ComponentProps<typeof Row>> = ({ ...flex }) 
                         y: -50,
                         colorStart: "brand-background-strong",
                         colorEnd: "static-transparent",
-                      }}/>
+                      }} />
                     <Background
                       position="absolute"
                       left="0"
@@ -68,7 +68,7 @@ export const Header: React.FC<React.ComponentProps<typeof Row>> = ({ ...flex }) 
                         y: -50,
                         colorStart: "accent-background-strong",
                         colorEnd: "static-transparent",
-                      }}/>
+                      }} />
                     <Column fillWidth gap="4" padding="4" radius="l" border="neutral-alpha-weak">
                       <Column fillWidth horizontal="center" gap="16" padding="24">
                         <Avatar size="l" />
@@ -78,7 +78,7 @@ export const Header: React.FC<React.ComponentProps<typeof Row>> = ({ ...flex }) 
                       <Option hasPrefix={<Icon onBackground="neutral-weak" size="s" name="settings" />} label="Settings" value="settings" href="/settings" />
                     </Column>
                     <Column fillWidth padding="4">
-                      <Option hasPrefix={<Icon onBackground="neutral-weak" size="s" name="logout" />} label="Log out" value="logout" onClick={logout}/>
+                      <Option hasPrefix={<Icon onBackground="neutral-weak" size="s" name="logout" />} label="Log out" value="logout" onClick={logout} />
                     </Column>
                   </Column>
                 }

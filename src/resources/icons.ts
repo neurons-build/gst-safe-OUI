@@ -5,6 +5,7 @@ import {
   HiOutlineArrowRightStartOnRectangle,
   HiOutlineCog6Tooth,
   HiOutlineBookOpen,
+  HiOutlineEnvelope,
 } from "react-icons/hi2";
 import {
   FaGithub,
@@ -21,6 +22,7 @@ export const iconLibrary: Record<string, IconType> = {
   discord: FaDiscord,
   threads: FaThreads,
   book: HiOutlineBookOpen,
+  email: HiOutlineEnvelope,
 };
 
 export type IconLibrary = typeof iconLibrary;

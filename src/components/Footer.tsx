@@ -13,7 +13,7 @@ export const Footer: React.FC<React.ComponentProps<typeof Row>> = ({ ...flex }) 
         gap="16"
         horizontal="between"
         vertical="center"
-        s={{direction: "column"}}
+        s={{ direction: "column" }}
       >
         <Text variant="body-default-s" onBackground="neutral-strong">
           <Text onBackground="neutral-weak">© {currentYear} /</Text>
