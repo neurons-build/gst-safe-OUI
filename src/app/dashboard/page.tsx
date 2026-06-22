@@ -59,6 +59,7 @@ export default function Dashboard() {
         return;
       }
 
+      // Fetch user data
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
@@ -67,12 +68,14 @@ export default function Dashboard() {
 
       if (userError) throw userError;
 
+      // Check if onboarding is complete
       const skipOnboarding = searchParams.get("skipOnboarding") === "true";
       if (!userData.onboarding_complete && !skipOnboarding) {
         router.push("/onboarding");
         return;
       }
 
+      // Fetch current FY income entries
       const currentFY = new Date().getFullYear() + "-" + (new Date().getFullYear() + 1).toString().slice(-2);
       const { data: incomeData, error: incomeError } = await supabase
         .from("income_entries")
@@ -101,22 +104,10 @@ export default function Dashboard() {
     }
   };
 
-  // Skeleton loading state — matches actual layout to prevent layout shift
   if (loading) {
     return (
-      <Column fillWidth horizontal="center" paddingX="l" paddingTop="64">
-        <Column maxWidth="l" fillWidth gap="24">
-          <Column fillWidth gap="8">
-            <Column fillWidth minHeight="32" radius="m" background="neutral-alpha-weak" />
-            <Column fillWidth minHeight="20" radius="m" background="neutral-alpha-weak" style={{ maxWidth: 200 }} />
-          </Column>
-          <Column fillWidth minHeight={100} radius="xl" background="neutral-alpha-weak" />
-          <Row fillWidth gap="12" s={{direction: "column"}}>
-            <Column fillWidth minHeight="80" radius="xl" background="neutral-alpha-weak" />
-            <Column fillWidth minHeight="80" radius="xl" background="neutral-alpha-weak" />
-          </Row>
-          <Column fillWidth minHeight="80" radius="xl" background="neutral-alpha-weak" />
-        </Column>
+      <Column fillWidth center padding="xl">
+        <Text>Loading...</Text>
       </Column>
     );
   }
@@ -129,44 +120,35 @@ export default function Dashboard() {
     );
   }
 
-  // Use domesticIncomePaise for threshold — export income doesn't count
   const percentage = calculateThresholdPercentage(
-    dashboardData.domesticIncomePaise,
+    dashboardData.totalIncomePaise,
     dashboardData.thresholdPaise
   );
   const remainingPaise = calculateRemainingToThreshold(
-    dashboardData.domesticIncomePaise,
+    dashboardData.totalIncomePaise,
     dashboardData.thresholdPaise
   );
   const gstLiabilityPaise = dashboardData.domesticIncomePaise * 0.18;
-  const exportIncomePaise = dashboardData.totalIncomePaise - dashboardData.domesticIncomePaise;
   const filingDeadlines = getFilingDeadlines();
 
-  // Derive current FY label for display
-  const now = new Date();
-  const fyStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
-  const fyLabel = `FY ${fyStart}–${(fyStart + 1).toString().slice(-2)}`;
-
-  const getBarBackground = (pct: number): string => {
-    if (pct >= 100) return "var(--danger-solid-strong)";
-    if (pct >= 90) return "var(--warning-solid-strong)";
-    if (pct >= 75) return "var(--warning-solid-medium)";
-    return "var(--brand-solid-medium)";
+  const getBarColor = (pct: number): string => {
+    if (pct >= 100) return "danger";
+    if (pct >= 90) return "orange";
+    if (pct >= 75) return "warning";
+    return "neutral";
   };
 
   return (
     <Column fillWidth horizontal="center" paddingX="l" paddingTop="64">
       <Column maxWidth="l" fillWidth gap="24">
-
         {/* Header */}
-        <Column fillWidth gap="4">
+        <Column fillWidth gap="8">
           <Heading variant="display-strong-s">Dashboard</Heading>
           <Text variant="body-default-s" onBackground="neutral-weak">
-            Welcome back, {profile?.username?.split(" ")[0] || userEmail || "User"} · {fyLabel}
+            Welcome back, {profile?.username?.split(' ')[0] || userEmail || "User"}
           </Text>
         </Column>
 
-        {/* Skip-onboarding notice */}
         {skipOnboarding && (
           <Column
             fillWidth
@@ -181,7 +163,7 @@ export default function Dashboard() {
           </Column>
         )}
 
-        {/* Alert Banner — only when approaching / over threshold */}
+        {/* Alert Banner */}
         {percentage >= 75 && (
           <Column
             fillWidth
@@ -195,108 +177,145 @@ export default function Dashboard() {
                 ? "You've crossed the GST threshold. Register immediately to avoid penalties."
                 : percentage >= 90
                   ? "You're at 90% of your GST threshold. Register now to avoid penalties."
-                  : "You're at 75% of your GST threshold. Start preparing for GST registration."}
+                  : "You're at 75% of your GST threshold. Start preparing for registration."}
             </Text>
           </Column>
         )}
 
-        {/* ── Overview ───────────────────────────────────────── */}
+        {/* Threshold Bar */}
+        <Column fillWidth gap="8">
+          <Row fillWidth horizontal="between">
+            <Text variant="label-default-s">GST Threshold Progress</Text>
+            <Text variant="label-default-s">{percentage}%</Text>
+          </Row>
+          <Column
+            fillWidth
+            minHeight="8"
+            radius="full"
+            solid="neutral-weak"
+            overflow="hidden"
+          >
+            <Column
+              fillWidth
+              minHeight="8"
+              radius="full"
+              solid={getBarColor(percentage) === "danger" ? "danger-strong" : getBarColor(percentage) === "warning" ? "warning-strong" : getBarColor(percentage) === "orange" ? "brand-strong" : "brand-medium"}
+              style={{ width: `${Math.min(percentage, 100)}%` }}
+            />
+          </Column>
+          <Row fillWidth horizontal="between">
+            <Text variant="body-default-s">
+              {formatCurrency(dashboardData.totalIncomePaise)} of {formatCurrency(dashboardData.thresholdPaise)}
+            </Text>
+            <Text variant="body-default-s" onBackground="neutral-weak">
+              {formatCurrency(remainingPaise)} remaining
+            </Text>
+          </Row>
+        </Column>
+
+        {/* Metric Cards */}
         <Column fillWidth gap="12">
           <Heading variant="heading-strong-s">Overview</Heading>
 
-          {/* Hero Card — total income */}
+          {/* Hero Card */}
+          <Card
+            fillWidth
+            padding="24"
+            radius="xl"
+            border="neutral-alpha-weak"
+            background="brand-alpha-weak"
+          >
+            <Column gap="8">
+              <Text
+                variant="label-default-s"
+                onBackground="neutral-weak"
+              >
+                Earned this FY
+              </Text>
+
+              <Heading variant="heading-strong-xl">
+                {formatCurrency(dashboardData.totalIncomePaise)}
+              </Heading>
+
+              <Text
+                variant="body-default-s"
+                onBackground="neutral-weak"
+              >
+                Total professional income recorded this financial year
+              </Text>
+            </Column>
+          </Card>
+
+          {/* Secondary Metrics */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 12,
+              border: "1px solid var(--danger-alpha-weak)",
+              width: "100%",
+            }}
+          >
+            <Card
+              padding="20"
+              radius="xl"
+              border="neutral-alpha-weak"
+            >
+              <Column gap="8">
+                <Text
+                  variant="label-default-s"
+                  onBackground="neutral-weak"
+                >
+                  GST Liability
+                </Text>
+
+                <Heading variant="heading-strong-l">
+                  {formatCurrency(gstLiabilityPaise)}
+                </Heading>
+              </Column>
+            </Card>
+
+            <Card
+              padding="20"
+              radius="xl"
+              border="neutral-alpha-weak"
+            >
+              <Column gap="8">
+                <Text
+                  variant="label-default-s"
+                  onBackground="neutral-weak"
+                >
+                  Remaining to Threshold
+                </Text>
+
+                <Heading variant="heading-strong-l">
+                  {formatCurrency(remainingPaise)}
+                </Heading>
+              </Column>
+            </Card>
+          </div>
+
+          {/* Progress Card */}
           <Card
             fillWidth
             padding="20"
             radius="xl"
             border="neutral-alpha-weak"
-            background="brand-alpha-weak"
           >
-            <Column gap="4">
-              <Text variant="label-default-s" onBackground="neutral-weak">
-                Earned this {fyLabel}
-              </Text>
-              <Heading variant="heading-strong-xl">
-                {formatCurrency(dashboardData.totalIncomePaise)}
-              </Heading>
-              <Text variant="body-default-s" onBackground="neutral-weak">
-                Total professional income recorded this financial year
-              </Text>
-
-              {/* Domestic vs Export breakdown — only show if there's export income */}
-              {exportIncomePaise > 0 && (
-                <Row gap="16" paddingTop="12">
-                  <Column gap="2">
-                    <Text variant="label-default-xs" onBackground="neutral-weak">
-                      Domestic (counts toward GST threshold)
-                    </Text>
-                    <Text variant="label-default-m">
-                      {formatCurrency(dashboardData.domesticIncomePaise)}
-                    </Text>
-                  </Column>
-                  <Column gap="2">
-                    <Text variant="label-default-xs" onBackground="neutral-weak">
-                      Export (excluded from threshold)
-                    </Text>
-                    <Text variant="label-default-m">
-                      {formatCurrency(exportIncomePaise)}
-                    </Text>
-                  </Column>
-                </Row>
-              )}
-            </Column>
-          </Card>
-
-          {/* Secondary Metrics — stack on mobile */}
-          <Row fillWidth gap="12" s={{direction: "column"}}>
-            <Card fillWidth padding="20" radius="xl" border="neutral-alpha-weak">
-              <Column gap="4">
-                <Text variant="label-default-s" onBackground="neutral-weak">
-                  GST Liability
+            <Column gap="8">
+              <Row
+                fillWidth
+                horizontal="between"
+                vertical="center"
+              >
+                <Text
+                  variant="label-default-s"
+                  onBackground="neutral-weak"
+                >
+                  Threshold Used
                 </Text>
-                <Heading variant="heading-strong-l">
-                  {formatCurrency(gstLiabilityPaise)}
-                </Heading>
-                <Text variant="body-default-xs" onBackground="neutral-weak">
-                  {gstLiabilityPaise === 0
-                    ? "Not yet liable — below registration threshold"
-                    : "Estimated at 18% on domestic income"}
-                </Text>
-              </Column>
-            </Card>
 
-            <Card fillWidth padding="20" radius="xl" border="neutral-alpha-weak">
-              <Column gap="4">
-                <Text variant="label-default-s" onBackground="neutral-weak">
-                  Remaining to Threshold
-                </Text>
-                <Heading variant="heading-strong-l">
-                  {remainingPaise <= 0
-                    ? "Threshold crossed"
-                    : formatCurrency(remainingPaise)}
-                </Heading>
-                <Text variant="body-default-xs" onBackground="neutral-weak">
-                  {remainingPaise <= 0
-                    ? "You are required to register for GST"
-                    : `Out of ${formatCurrency(dashboardData.thresholdPaise)} threshold`}
-                </Text>
-              </Column>
-            </Card>
-          </Row>
-
-          {/* Threshold Progress Card — single source of truth */}
-          <Card fillWidth padding="20" radius="xl" border="neutral-alpha-weak">
-            <Column fillWidth gap={1}>
-              <Row fillWidth horizontal="between" vertical="center">
-                <Column gap="2">
-                  <Text variant="label-default-s" onBackground="neutral-weak">
-                    Threshold Used
-                  </Text>
-                  <Text variant="body-default-xs" onBackground="neutral-weak">
-                    Based on domestic income only
-                  </Text>
-                </Column>
-                <Text variant="heading-strong-m">
+                <Text variant="label-default-m">
                   {percentage}%
                 </Text>
               </Row>
@@ -315,30 +334,31 @@ export default function Dashboard() {
                     width: `${Math.min(percentage, 100)}%`,
                     height: "100%",
                     borderRadius: 999,
-                    background: getBarBackground(percentage),
-                    transition: "width 400ms ease",
+                    background:
+                      percentage >= 90
+                        ? "var(--warning-solid-medium)"
+                        : "var(--brand-solid-medium)",
+                    transition: "width 300ms ease",
                   }}
                 />
               </div>
 
-              <Row fillWidth horizontal="between">
-                <Text variant="body-default-s" onBackground="neutral-weak">
-                  {formatCurrency(dashboardData.domesticIncomePaise)} earned
-                </Text>
-                <Text variant="body-default-s" onBackground="neutral-weak">
-                  {formatCurrency(dashboardData.thresholdPaise)} threshold
-                </Text>
-              </Row>
+              <Text
+                variant="body-default-s"
+                onBackground="neutral-weak"
+              >
+                {formatCurrency(dashboardData.totalIncomePaise)} of ₹20,00,000 threshold
+              </Text>
             </Column>
           </Card>
         </Column>
 
-        {/* ── Filing Deadlines ───────────────────────────────── */}
-        {dashboardData.isGstRegistered ? (
+        {/* Filing Deadlines (if GST registered) */}
+        {dashboardData.isGstRegistered && (
           <Column fillWidth gap="8">
             <Heading variant="heading-strong-s">Filing Deadlines</Heading>
-            <Row fillWidth gap="8" s={{direction: "column"}}>
-              <Card fillWidth padding="16" radius="l" border="neutral-alpha-weak">
+            <Row fillWidth gap="8">
+              <Card fillWidth flex={1} padding="16" radius="l" border="neutral-alpha-weak">
                 <Column fillWidth gap="4">
                   <Text variant="label-default-s" onBackground="neutral-weak">
                     GSTR-1 Due
@@ -348,7 +368,7 @@ export default function Dashboard() {
                   </Heading>
                 </Column>
               </Card>
-              <Card fillWidth padding="16" radius="l" border="neutral-alpha-weak">
+              <Card fillWidth flex={1} padding="16" radius="l" border="neutral-alpha-weak">
                 <Column fillWidth gap="4">
                   <Text variant="label-default-s" onBackground="neutral-weak">
                     GSTR-3B Due
@@ -360,33 +380,16 @@ export default function Dashboard() {
               </Card>
             </Row>
           </Column>
-        ) : percentage >= 75 ? (
-          /* Pre-registration preview — shown when approaching threshold */
-          <Column fillWidth gap="8">
-            <Heading variant="heading-strong-s">Filing Deadlines</Heading>
-            <Card fillWidth padding="16" radius="l" border="warning-alpha-weak" background="warning-alpha-weak">
-              <Column gap="4">
-                <Text variant="label-default-s" onBackground="neutral-weak">
-                  Once registered, you'll be required to file monthly returns
-                </Text>
-                <Text variant="body-default-s" onBackground="neutral-weak">
-                  GSTR-1 is due by the 11th and GSTR-3B by the 20th of each following month.
-                  Start organising your invoices now.
-                </Text>
-              </Column>
-            </Card>
-          </Column>
-        ) : null}
+        )}
 
-        {/* ── Recent Income ──────────────────────────────────── */}
-        <Column fillWidth gap="8" paddingBottom="64">
-          <Row fillWidth horizontal="between" vertical="center">
+        {/* Recent Income */}
+        <Column fillWidth gap="8">
+          <Row fillWidth horizontal="between">
             <Heading variant="heading-strong-s">Recent Income</Heading>
             <Button size="s" variant="secondary" onClick={() => router.push("/income")}>
               View All
             </Button>
           </Row>
-
           {dashboardData.recentEntries.length === 0 ? (
             <Column
               fillWidth
@@ -409,18 +412,15 @@ export default function Dashboard() {
                 <Row
                   key={entry.id}
                   fillWidth
-                  padding="20"
+                  padding="12"
                   radius="l"
                   border="neutral-alpha-weak"
                   horizontal="between"
-                  vertical="center"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => router.push(`/income/${entry.id}`)}
                 >
                   <Column fillWidth gap="2">
                     <Text variant="body-default-m">{entry.source_name}</Text>
                     <Text variant="label-default-s" onBackground="neutral-weak">
-                      {entry.month}/{entry.year} · {entry.income_type}
+                      {entry.month}/{entry.year} • {entry.income_type}
                     </Text>
                   </Column>
                   <Text variant="body-default-m">
@@ -432,19 +432,18 @@ export default function Dashboard() {
           )}
         </Column>
 
-        {/* ── Quick Actions ──────────────────────────────────── */}
+        {/* Quick Actions */}
         <Column fillWidth gap="8">
           <Heading variant="heading-strong-s">Quick Actions</Heading>
-          <Row gap="8">
-            <Button onClick={() => router.push("/income")}>
+          <Row fillWidth gap="8">
+            <Button fillWidth onClick={() => router.push("/income")}>
               Log Income
             </Button>
-            <Button variant="secondary" onClick={() => router.push("/invoices/new")}>
+            <Button fillWidth variant="secondary" onClick={() => router.push("/invoices")}>
               Add Invoice
             </Button>
           </Row>
         </Column>
-
       </Column>
     </Column>
   );

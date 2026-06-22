@@ -27,9 +27,8 @@ export const Header: React.FC<React.ComponentProps<typeof Row>> = ({ ...flex }) 
       />
       <Row maxWidth="m" horizontal="between" paddingLeft="20" paddingRight="12" minHeight="56" vertical="center" background="surface" border="neutral-alpha-weak" radius="l" {...flex}>
         <Row vertical="center" gap="32">
-          {/* <Logo dark icon="/trademarks/wordmark-dark.svg" href="/" size="s"/>
-          <Logo light icon="/trademarks/wordmark-light.svg" href="/" size="s"/> */}
-          GST Safe
+          <Logo dark icon="/trademarks/wordmark-dark.svg" href="/" size="s"/>
+          <Logo light icon="/trademarks/wordmark-light.svg" href="/" size="s"/>
         </Row>
         {profile ? (
           <Row vertical="center" gap="16">

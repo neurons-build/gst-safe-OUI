@@ -2,7 +2,6 @@
 
 import React from "react";
 import {
-  Avatar,
   Background,
   Badge,
   Button,
@@ -889,366 +888,251 @@ const Footer = (flex: React.ComponentProps<typeof Column>) => {
 
       {/* Center Row */}
       <Row fillWidth horizontal="center">
-  {/* LEFT SIDE */}
-  <Row flex={1}>
-    <Background
-      fill
-      border="neutral-alpha-medium"
-      bottomRightRadius="full"
-      topLeftRadius="full"
-      width={12}
-      minWidth={12}
-      m={{ hide: true }}
-    />
-
-    <Column
-      flex={1}
-      bottomLeftRadius="full"
-      topRightRadius="full"
-      overflow="hidden"
-      border="neutral-alpha-medium"
-      l={{ hide: true }}
-    >
-      {/* Gradient Section */}
-      <Row flex={1} minWidth={4} overflow="hidden">
-        <Background
-          fill
-          position="absolute"
-          bottom="0"
-          left="0"
-          data-solid="color"
-          gradient={{
-            display: true,
-            x: 50,
-            y: 100,
-            width: 100,
-            height: 50,
-            colorStart: "brand-solid-strong",
-            colorEnd: "page-background",
-          }}
-        />
-
-        <Background
-          fill
-          position="absolute"
-          bottom="0"
-          left="0"
-          style={{
-            filter: "blur(1rem)",
-            transform: "scale(1.1)",
-          }}
-          gradient={{
-            display: true,
-            x: 50,
-            y: 100,
-            width: 100,
-            height: 30,
-            colorStart: "brand-on-background-strong",
-          }}
-        />
-      </Row>
-
-
-    </Column>
-  </Row>
-
-  {/* CENTER CONTENT */}
-  <Column
-    maxWidth="xl"
-    borderX="neutral-alpha-medium"
-  >
-    <Row
-      paddingX="xl"
-      paddingTop="xl"
-      paddingBottom="40"
-      fillWidth
-      horizontal="between"
-      vertical="center"
-    >
-      <Logo
-        href="/"
-        dark
-        icon="/trademarks/icon-dark.svg"
-        size="m"
-      />
-
-      <Logo
-        href="/"
-        light
-        icon="/trademarks/icon-dark.svg"
-        size="m"
-      />
-
-      <Row gap="8">
-        {social.map((item, index) => (
-          <IconButton
-            key={index}
-            data-border="rounded"
-            icon={item.icon}
-            variant="secondary"
-            size="l"
-            href={item.href}
-          />
-        ))}
-      </Row>
-    </Row>
-
-    <Row
-      paddingX="xl"
-      paddingBottom="xl"
-      fillWidth
-      wrap
-      gap="32"
-      horizontal="between"
-    >
-      {navigation.map((section) => (
-        <Column
-          key={section.title}
-          maxWidth={12}
-          gap="32"
-          paddingY="8"
-        >
-          <Text
-            wrap="balance"
-            variant="heading-strong-s"
-          >
-            {section.title}
-          </Text>
-
-          {[
-            { key: "free", label: "Free" },
-            { key: "pro", label: "Pro" },
-            { key: "resources", label: "Resources" },
-            { key: "legal", label: "Legal" },
-            { key: "items", label: undefined },
-          ].map(({ key, label }) => {
-            const arr = (section as any)[key] as Array<any> | undefined;
-
-            if (!arr || arr.length === 0) return null;
-
-            return (
-              <Column
-                key={`${section.title}-${key}`}
-                gap="8"
-              >
-                {label && (
-                  <Text
-                    variant="label-default-s"
-                    onBackground="neutral-weak"
-                    marginBottom="8"
-                  >
-                    {label}
-                  </Text>
-                )}
-
-                {arr.map((item: any) => (
-                  <SmartLink
-                    key={`${item.label}-${item.href}`}
-                    href={item.href}
-                    unstyled
-                  >
-                    <Text
-                      wrap="balance"
-                      variant="body-default-s"
-                      onBackground="neutral-strong"
-                    >
-                      {item.label}
-                    </Text>
-
-                    {item.tag && (
-                      <Tag
-                        style={{ transform: "scale(0.9)" }}
-                        variant="brand"
-                        size="s"
-                      >
-                        {item.tag}
-                      </Tag>
-                    )}
-                  </SmartLink>
-                ))}
-              </Column>
-            );
-          })}
-        </Column>
-      ))}
-    </Row>
-  </Column>
-
-  {/* RIGHT SIDE (MIRRORED) */}
-  <Row flex={1}>
-    <Column
-      flex={1}
-      topLeftRadius="full"
-      bottomRightRadius="full"
-      overflow="hidden"
-      border="neutral-alpha-medium"
-      l={{ hide: true }}
-    >
-      
-      {/* Mirrored Gradient */}
-      <Row flex={1} minWidth={4} overflow="hidden">
-        <Background
-          fill
-          position="absolute"
-          bottom="0"
-          right="0"
-          data-solid="color"
-          gradient={{
-            display: true,
-            x: 50,
-            y: 100,
-            width: 100,
-            height: 50,
-            colorStart: "brand-solid-strong",
-            colorEnd: "page-background",
-          }}
-        />
-
-        <Background
-          fill
-          position="absolute"
-          bottom="0"
-          right="0"
-          style={{
-            filter: "blur(1rem)",
-            transform: "scale(1.1)",
-          }}
-          gradient={{
-            display: true,
-            x: 50,
-            y: 100,
-            width: 100,
-            height: 30,
-            colorStart: "brand-on-background-strong",
-          }}
-        />
-      </Row>
-    </Column>
-
-
-    <Background
-      fill
-      border="neutral-alpha-medium"
-      topRightRadius="full"
-      bottomLeftRadius="full"
-      width={12}
-      minWidth={12}
-      m={{ hide: true }}
-    />
-  </Row>
-</Row>
-
-      {/* Bottom Row */}
-      <Row fillWidth borderTop="neutral-alpha-medium" horizontal="center">
-        {/* Start */}
+        {/* LEFT SIDE */}
         <Row flex={1}>
           <Background
-            lines={{
-              display: true,
-              color: "neutral-alpha-weak",
-              angle: -45,
-              size: "4",
-            }}
+            fill
+            border="neutral-alpha-medium"
             bottomRightRadius="full"
-            borderRight="neutral-alpha-medium"
-            borderBottom="neutral-alpha-medium"
+            topLeftRadius="full"
             width={12}
             minWidth={12}
             m={{ hide: true }}
           />
 
-          <Row fillWidth overflow="hidden" minWidth={4} l={{ hide: true }}>
-            <Background
-              fill
-              position="absolute"
-              bottom="0"
-              right="0"
-              data-solid="color"
-              gradient={{
-                display: true,
-                x: 100,
-                y: 50,
-                width: 100,
-                height: 200,
-                colorStart: "brand-solid-strong",
-                colorEnd: "page-background",
-              }}
-            />
-            <Background
-              fill
-              position="absolute"
-              bottom="0"
-              right="0"
-              style={{ filter: "blur(1rem)", transform: "scale(1.1)" }}
-              gradient={{
-                display: true,
-                x: 100,
-                y: 50,
-                width: 50,
-                height: 200,
-                colorStart: "brand-on-background-strong",
-              }}
-            />
-          </Row>
-        </Row>
-
-        {/* Center */}
-        <Row gap="8" paddingY="24" center maxWidth="xl" textVariant="label-default-s" onBackground="neutral-medium" borderX="neutral-alpha-medium">
-          Built by Developers, for Developers {" "}
-          <SmartLink href="#" unstyled>
-            <Avatar size="m" src="https://github.com/shaayar.png" />
-            Sightline Team
-          </SmartLink>
-        </Row>
-
-        {/* End */}
-        <Row flex={1}>
-          <Row fillWidth overflow="hidden" minWidth={4} l={{ hide: true }}>
-            <Background
-              fill
-              position="absolute"
-              bottom="0"
-              left="0"
-              data-solid="color"
-              gradient={{
-                display: true,
-                x: 0,
-                y: 50,
-                width: 100,
-                height: 200,
-                colorStart: "brand-solid-strong",
-                colorEnd: "page-background",
-              }}
-            />
-            <Background
-              fill
-              position="absolute"
-              bottom="0"
-              left="0"
-              style={{ filter: "blur(1rem)", transform: "scale(1.1)" }}
-              gradient={{
-                display: true,
-                x: 0,
-                y: 50,
-                width: 50,
-                height: 200,
-                colorStart: "brand-on-background-strong",
-              }}
-            />
-          </Row>
-          <Background
-            lines={{
-              display: true,
-              color: "neutral-alpha-weak",
-              angle: -45,
-              size: "4"
-            }}
+          <Column
+            flex={1}
             bottomLeftRadius="full"
-            borderLeft="neutral-alpha-medium"
-            borderBottom="neutral-alpha-medium"
+            topRightRadius="full"
+            overflow="hidden"
+            border="neutral-alpha-medium"
+            l={{ hide: true }}
+          >
+            {/* Gradient Section */}
+            <Row flex={1} minWidth={4} overflow="hidden">
+              <Background
+                fill
+                position="absolute"
+                bottom="0"
+                left="0"
+                data-solid="color"
+                gradient={{
+                  display: true,
+                  x: 50,
+                  y: 100,
+                  width: 100,
+                  height: 50,
+                  colorStart: "brand-solid-strong",
+                  colorEnd: "page-background",
+                }}
+              />
+
+              <Background
+                fill
+                position="absolute"
+                bottom="0"
+                left="0"
+                style={{
+                  filter: "blur(1rem)",
+                  transform: "scale(1.1)",
+                }}
+                gradient={{
+                  display: true,
+                  x: 50,
+                  y: 100,
+                  width: 100,
+                  height: 30,
+                  colorStart: "brand-on-background-strong",
+                }}
+              />
+            </Row>
+
+
+          </Column>
+        </Row>
+
+        {/* CENTER CONTENT */}
+        <Column
+          maxWidth="xl"
+          borderX="neutral-alpha-medium"
+        >
+          <Row
+            paddingX="xl"
+            paddingTop="xl"
+            paddingBottom="40"
+            fillWidth
+            horizontal="between"
+            vertical="center"
+          >
+            <Logo
+              href="/"
+              dark
+              icon="/trademarks/icon-dark.svg"
+              size="m"
+            />
+
+            <Logo
+              href="/"
+              light
+              icon="/trademarks/icon-dark.svg"
+              size="m"
+            />
+
+            <Row gap="8">
+              {social.map((item, index) => (
+                <IconButton
+                  key={index}
+                  data-border="rounded"
+                  icon={item.icon}
+                  variant="secondary"
+                  size="l"
+                  href={item.href}
+                />
+              ))}
+            </Row>
+          </Row>
+
+          <Row
+            paddingX="xl"
+            paddingBottom="xl"
+            fillWidth
+            wrap
+            gap="32"
+            horizontal="between"
+          >
+            {navigation.map((section) => (
+              <Column
+                key={section.title}
+                maxWidth={12}
+                gap="32"
+                paddingY="8"
+              >
+                <Text
+                  wrap="balance"
+                  variant="heading-strong-s"
+                >
+                  {section.title}
+                </Text>
+
+                {[
+                  { key: "free", label: "Free" },
+                  { key: "pro", label: "Pro" },
+                  { key: "resources", label: "Resources" },
+                  { key: "legal", label: "Legal" },
+                  { key: "items", label: undefined },
+                ].map(({ key, label }) => {
+                  const arr = (section as any)[key] as Array<any> | undefined;
+
+                  if (!arr || arr.length === 0) return null;
+
+                  return (
+                    <Column
+                      key={`${section.title}-${key}`}
+                      gap="8"
+                    >
+                      {label && (
+                        <Text
+                          variant="label-default-s"
+                          onBackground="neutral-weak"
+                          marginBottom="8"
+                        >
+                          {label}
+                        </Text>
+                      )}
+
+                      {arr.map((item: any) => (
+                        <SmartLink
+                          key={`${item.label}-${item.href}`}
+                          href={item.href}
+                          unstyled
+                        >
+                          <Text
+                            wrap="balance"
+                            variant="body-default-s"
+                            onBackground="neutral-strong"
+                          >
+                            {item.label}
+                          </Text>
+
+                          {item.tag && (
+                            <Tag
+                              style={{ transform: "scale(0.9)" }}
+                              variant="brand"
+                              size="s"
+                            >
+                              {item.tag}
+                            </Tag>
+                          )}
+                        </SmartLink>
+                      ))}
+                    </Column>
+                  );
+                })}
+              </Column>
+            ))}
+          </Row>
+        </Column>
+        {/* RIGHT SIDE */}
+        <Row flex={1}>
+          <Background
+            fill
+            border="neutral-alpha-medium"
+            bottomRightRadius="full"
+            topLeftRadius="full"
             width={12}
             minWidth={12}
-            m={{ hide: true }} />
+            m={{ hide: true }}
+          />
+
+          <Column
+            flex={1}
+            bottomLeftRadius="full"
+            topRightRadius="full"
+            overflow="hidden"
+            border="neutral-alpha-medium"
+            l={{ hide: true }}
+          >
+            {/* Gradient Section */}
+            <Row flex={1} minWidth={4} overflow="hidden">
+              <Background
+                fill
+                position="absolute"
+                bottom="0"
+                left="0"
+                data-solid="color"
+                gradient={{
+                  display: true,
+                  x: 50,
+                  y: 100,
+                  width: 100,
+                  height: 50,
+                  colorStart: "brand-solid-strong",
+                  colorEnd: "page-background",
+                }}
+              />
+
+              <Background
+                fill
+                position="absolute"
+                bottom="0"
+                left="0"
+                style={{
+                  filter: "blur(1rem)",
+                  transform: "scale(1.1)",
+                }}
+                gradient={{
+                  display: true,
+                  x: 50,
+                  y: 100,
+                  width: 100,
+                  height: 30,
+                  colorStart: "brand-on-background-strong",
+                }}
+              />
+            </Row>
+
+
+          </Column>
         </Row>
       </Row>
     </Column>
