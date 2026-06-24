@@ -13,7 +13,7 @@ export default function RootLayout({
   const isHome = pathname === "/";
 
   return (
-    <Column fillWidth horizontal="center" style={{minHeight: "100vh", backgroundColor: "#F8FAFC"}} data-theme="light">
+    <Column fillWidth horizontal="center" style={{minHeight: "100vh"}}>
       <Header />
       <Column fillWidth flex={1}>
         {children}
